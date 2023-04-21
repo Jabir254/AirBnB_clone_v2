@@ -114,17 +114,59 @@ class HBNBCommand(cmd.Cmd):
         pass
 
     def do_create(self, args):
-        """ Create an object of any class"""
-        if not args:
-            print("** class name missing **")
-            return
-        elif args not in HBNBCommand.classes:
-            print("** class doesn't exist **")
-            return
-        new_instance = HBNBCommand.classes[args]()
-        storage.save()
-        print(new_instance.id)
-        storage.save()
+        """
+    Creates a new instance of a given class with the given parameters.
+    Usage: create <Class name> <param 1> <param 2> <param 3>...
+    Param syntax: <key name>=<value>
+    Value syntax:
+        String: "<value>" => starts with a double quote
+            any double quote inside the value must be escaped with a backslash \
+            all underscores _ must be replace by spaces . Example: You want to set the string My little house to the attribute name, your command line must be name="My_little_house"
+        Float: <unit>.<decimal> => contains a dot .
+        Integer: <number> => default case
+    """
+    args = arg.split()
+    if len(args) < 2:
+        print("Usage: create <Class name> <param 1> <param 2> <param 3>...")
+        return
+
+    class_name = args[0]
+    try:
+        cls = eval(class_name)
+    except NameError:
+        print("Class not found")
+        return
+
+    params = {}
+    for param in args[1:]:
+        try:
+            key, value = param.split("=")
+        except ValueError:
+            continue
+
+        # Handle string values
+        if value.startswith('"'):
+            value = value.strip('"').replace('_', ' ').replace('\\"', '"')
+
+        # Handle float values
+        elif '.' in value:
+            try:
+                value = float(value)
+            except ValueError:
+                continue
+
+        # Handle integer values
+        else:
+            try:
+                value = int(value)
+            except ValueError:
+                continue
+
+        params[key] = value
+
+    obj = cls(**params)
+    self._db.add(obj)
+    print("Object created with id", obj.id)
 
     def help_create(self):
         """ Help information for the create method """
