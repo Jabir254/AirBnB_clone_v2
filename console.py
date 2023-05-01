@@ -120,8 +120,12 @@ class HBNBCommand(cmd.Cmd):
     Param syntax: <key name>=<value>
     Value syntax:
         String: "<value>" => starts with a double quote
-            any double quote inside the value must be escaped with a backslash \
-            all underscores _ must be replace by spaces . Example: You want to set the string My little house to the attribute name, your command line must be name="My_little_house"
+            any double quote inside the value must be escaped with a\
+            backslash all underscores _ must be replace by spaces.\
+            Example: You want to set the string\
+            My little house to the attribute name, your command line\
+            must be name\
+            ="My_little_house"
         Float: <unit>.<decimal> => contains a dot .
         Integer: <number> => default case
     """
