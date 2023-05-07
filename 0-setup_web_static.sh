@@ -1,27 +1,48 @@
 #!/usr/bin/env bash
+# sets up my web servers for the deployment of web_static
 
-# Install Nginx if it not already installed
-if ! [ -x "$(command -v nginx)" ]; then
-    sudo apt-get update
-    sudo apt-get -y install nginx
-fi
+echo -e "\e[1;32m START\e[0m"
 
-# Create the necessary directories
-sudo mkdir -p /data/web_static/releases/test/
-sudo mkdir -p /data/web_static/shared/
-sudo mkdir -p /data/web_static/current/
+#--Updating the packages
+sudo apt-get -y update
+sudo apt-get -y install nginx
+echo -e "\e[1;32m Packages updated\e[0m"
+echo
 
-# Create a fake HTML file
-echo "Fake HTML file to test Nginx configuration" | sudo tee /data/web_static/releases/test/index.html
+#--configure firewall
+sudo ufw allow 'Nginx HTTP'
+echo -e "\e[1;32m Allow incomming NGINX HTTP connections\e[0m"
+echo
 
-# Create a symbolic link
+#--created the dir
+sudo mkdir -p /data/web_static/releases/test /data/web_static/shared
+echo -e "\e[1;32m directories created"
+echo
+
+#--adds test string
+echo "<h1>Welcome to www.beta-scribbles.tech</h1>" > /data/web_static/releases/test/index.html
+echo -e "\e[1;32m Test string added\e[0m"
+echo
+
+#--prevent overwrite
+if [ -d "/data/web_static/current" ];
+then
+    echo "path /data/web_static/current exists"
+    sudo rm -rf /data/web_static/current;
+fi;
+echo -e "\e[1;32m prevent overwrite\e[0m"
+echo
+
+#--create symbolic link
 sudo ln -sf /data/web_static/releases/test/ /data/web_static/current
+sudo chown -hR ubuntu:ubuntu /data
 
-# Give ownership of the /data/ folder to the ubuntu user AND group
-sudo chown -R ubuntu:ubuntu /data/
+sudo sed -i '38i\\tlocation /hbnb_static/ {\n\t\talias /data/web_static/current/;\n\t}\n' /etc/nginx/sites-available/default
 
-# Update Nginx configuration
-sudo sed -i '/^\s*server\s*{/,/^\s*}\s*$/ s|^\(\s*\)#\?\(\s*root\s*/var/www/html;\)|\1alias /data/web_static/current/;|' /etc/nginx/sites-available/default
+sudo ln -sf '/etc/nginx/sites-available/default' '/etc/nginx/sites-enabled/default'
+echo -e "\e[1;32m Symbolic link created\e[0m"
+echo
 
-# Restart Nginx
+#--restart NGINX
 sudo service nginx restart
+echo -e "\e[1;32m restart NGINX\e[0m"
