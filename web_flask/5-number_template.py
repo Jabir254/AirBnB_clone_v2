@@ -3,7 +3,7 @@
 
 
 from flask import Flask, render_template
-from .. import templates
+from . import templates
 
 app = Flask(__name__)
 
